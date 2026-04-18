@@ -48,33 +48,60 @@ float PedirFloatSeguro(string mensajeInstruccion)
     }
 }
 
-void leerOpcionUsuario()
+string PedirTextoSeguro(string mensajeInstruccion)
 {
-    int opcionUsuario = 0;
-    try
-    {
-        opcionUsuario = Convert.ToInt32(Console.ReadLine());
-    }
-    catch
-    {
-        Console.WriteLine("La opción seleccionada no es válida. Por favor ingrese el número que corresponda a la opción seleccionada.");
-    }
+    Console.WriteLine(mensajeInstruccion);
 
+    while (true)
+    {
+        try
+        {
+            string? textoString = Console.ReadLine();
+            return textoString;
+        }
+        catch
+        {
+            Console.WriteLine("Texto ingresado no válido, por favor ingresa el nombre de la planta tal y como se muestra en el inventario.");
+        }
+    }
+}
+
+int PedirOpcionUsaurioSegura(string mensajeInstruccion)
+{
+    Console.WriteLine(mensajeInstruccion);
+
+    while (true)
+    {
+        try
+        {
+            int opcionUsuario = Convert.ToInt32(Console.ReadLine());
+            return opcionUsuario;
+        }
+        catch
+        {
+            Console.WriteLine("La opción seleccionada no es válida. Por favor ingrese el número que corresponda a la opción seleccionada.");
+        }
+    }
+}
+
+void menuSwitch()
+{
+    int opcionUsuario = PedirOpcionUsaurioSegura("Por favor seleccione una opción para continuar.");
     switch(opcionUsuario)
     {
         case 1: 
         foreach(PlantaExotica planta in inventarioPlantas)
-            {
-                Console.WriteLine("| Nombre: " + planta.Nombre + " | Precio: $" + planta.Precio + " | Stock: " + planta.Stock + " |");
-            }
+        {
+            Console.WriteLine("| Nombre: " + planta.Nombre + " | Precio: $" + planta.Precio + " | Stock: " + planta.Stock + " |");
+        }
         break;
 
-        case 2: 
+        case 4: 
         running = false;
         break;
 
         case 3:
-        Console.WriteLine("Por favor, ingresa el Nombre de la planta que deseas agreagar al inventario.");
+        Console.WriteLine("Ingresa el Nombre de la planta que deseas agreagar al inventario.");
         string? nuevoNombre = Console.ReadLine();
 
         float nuevoPrecio = PedirFloatSeguro("Ahora ingresa el precio de venta.");
@@ -85,13 +112,42 @@ void leerOpcionUsuario()
         inventarioPlantas.Add(nuevaPlanta);
 
         Console.WriteLine("Planta agregada con éxito.");
-        
+            
         break;
 
-        case 4:
-        //pendiente
-        break;
+        case 2:
+        bool vendiendoPlanta = true;
+        while(vendiendoPlanta)
+        {
+            //Imprimir el inventario disponible cuando alguien quiere vender. Me hace sentido de parte del usuario que si quiero vender, no necesite salir y volver a menu para verificar qué plantas existen en el inventario y cuántas quedan.
+            foreach(PlantaExotica planta in inventarioPlantas)
+            {
+                Console.WriteLine("| Nombre: " + planta.Nombre + " | Precio: $" + planta.Precio + " | Stock: " + planta.Stock + " |");
+            }
+            
+            string plantaVenta = PedirTextoSeguro("Ingresa el nombre de la planta que quieres vender.");
 
+            bool plantaEncontrada = false;
+
+            foreach(PlantaExotica planta in inventarioPlantas)
+            {
+                if (planta.Nombre == plantaVenta)
+                {
+                        plantaEncontrada = true;
+                        int cantidadVenta = PedirIntSeguro("Ingresa el número de plantas que deseas vender.");
+                        planta.Vender(cantidadVenta);
+                        break;
+                }
+            }
+
+            if (plantaEncontrada == false)
+                {
+                    Console.WriteLine("Planta no encontrada en el inventario o no hay stock de la planta seleccionada.");
+                }
+            vendiendoPlanta = false;
+
+        }
+        break;
 
     }
 
@@ -100,11 +156,11 @@ void leerOpcionUsuario()
 while(running)
 {
     Console.WriteLine("[1] Ver inventario.");
-    Console.WriteLine("[2] Salir.");
+    Console.WriteLine("[2] Vender.");
     Console.WriteLine("[3] Agregar planta al inventario.");
-    Console.WriteLine("[4] Vender.");
-    Console.WriteLine("Por favor seleccione una opción para continuar.");
-    leerOpcionUsuario();
+    Console.WriteLine("[4] Salir.");
+    
+    menuSwitch();
 }
 
 
@@ -153,16 +209,20 @@ public class PlantaExotica
         Stock = stockPlanta;
     }
 
-    public void Vender()
+    public void Vender(int cantidad)
     {
-        if (Stock > 0)
+        if (Stock >= cantidad)
         {
-            Stock --;
-            Console.WriteLine("Venta exitosa de: " + Nombre);
+            Stock -= cantidad;
+            Console.WriteLine("Se han vendido " + cantidad + " de " + Nombre +".");
+        }
+        else if (Stock < cantidad && Stock > 0)
+        {
+            Console.WriteLine("Solo quedan " + Stock + " unidades disponibles");
         }
         else
         {
-            Console.WriteLine("No hay stock suficiente de " + Nombre);
+            Console.WriteLine("No hay unidades disponibles, reposición necesaria.");
         }
     }
 }
